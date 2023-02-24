@@ -3,8 +3,8 @@ from flask_login import login_user, current_user, logout_user, login_required
 from tennisBlog import db
 from werkzeug.security import generate_password_hash,check_password_hash
 from tennisBlog.models import User, BlogPost
-from tennisBlog.user.forms import RegistrationForm, LoginForm, UpdateUserForm
-from tennisBlog.user.picture_handler import add_profile_pic
+from tennisBlog.users.forms import RegistrationForm, LoginForm, UpdateUserForm
+from tennisBlog.users.picture_handler import add_profile_pic
 
 users = Blueprint('users', __name__)
 
