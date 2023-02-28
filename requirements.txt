@@ -2,3 +2,4 @@ flask-sqlalchemy
 flask_migrate
 flask_login
 email_validator
+bloompy

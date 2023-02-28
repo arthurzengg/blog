@@ -5,6 +5,11 @@ from werkzeug.security import generate_password_hash,check_password_hash
 from tennisBlog.models import User, BlogPost
 from tennisBlog.users.forms import RegistrationForm, LoginForm, UpdateUserForm
 from tennisBlog.users.picture_handler import add_profile_pic
+import bloompy
+
+# Create Bloompy
+bf = bloompy.BloomFilter(error_rate=0.001, element_num=10**3)
+bf = bloompy.get_filter_fromfile('bloompyFile.suffix')
 
 users = Blueprint('users', __name__)
 
@@ -17,7 +22,11 @@ def register():
         user = User(email=form.email.data,
                     username=form.username.data,
                     password=form.password.data)
+        # Add key value to bloompy
+        bf.add(form.email.data)
+        bf.tofile('bloompyFile.suffix')
 
+        # Add user to database
         db.session.add(user)
         db.session.commit()
         flash('Thanks for registering! Now you can login!')
@@ -32,10 +41,12 @@ def login():
     if form.validate_on_submit():
         # Grab the user from our User Models table
         user = User.query.filter_by(email=form.email.data).first()
+        # Using bloompy to check if user in the databse
+        if not bf.exists(form.email.data):
+            return "This user does not exist in our database!"
 
         if user.check_password(form.password.data) and user is not None:
             #Log in the user
-
             login_user(user)
             flash('Logged in successfully.')
 
@@ -64,10 +75,9 @@ def account():
     form = UpdateUserForm()
 
     if form.validate_on_submit():
-        print(form)
         if form.picture.data:
             username = current_user.username
-            pic = add_profile_pic(form.picture.data,username)
+            pic = add_profile_pic(form.picture.data, username)
             current_user.profile_image = pic
 
         current_user.username = form.username.data
